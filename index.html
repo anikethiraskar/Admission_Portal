@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admission Portal - Home</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#F8FAFC',
+            primary: '#4338CA',    // Indigo
+            secondary: '#6366F1',  // Lighter Indigo
+            accent: '#EAB308',     // Yellow
+            textColor: '#1E293B',
+            error: '#DC2626'
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Add This line for the favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+</head>
+<body class="bg-background text-textColor min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Left Logo -->
+        <div class="text-2xl font-bold">Admission Portal</div>
+
+        <!-- Desktop Links -->
+        <div class="hidden sm:flex items-center space-x-6">
+          <a href="#" class="hover:text-white font-medium border-b-2 border-transparent hover:border-white py-1">Home</a>
+          <a href="registration.html" class="hover:text-white hover:border-white border-b-2 border-transparent py-1">Registration</a>
+          <a href="login.html" class="hover:text-white hover:border-white border-b-2 border-transparent py-1">Login</a>
+
+          <!-- Profile section (shown after login) -->
+          <div id="profile-section" class="hidden">
+            <a href="report.html" class="hover:text-white hover:border-white border-b-2 border-transparent py-1">Report</a>
+            <a href="admission.html" class="hover:text-white hover:border-white border-b-2 border-transparent py-1">Admission Form</a>
+            <a href="#" id="logout-btn" class="hover:text-white hover:border-white border-b-2 border-transparent py-1">Logout</a>
+            <div class="ml-4 relative group">
+              <div
+                id="profile-initial"
+                class="h-10 w-10 rounded-full border-2 border-white bg-blue-800 flex items-center justify-center text-white font-bold text-lg cursor-pointer shadow-md hover:shadow-lg transition-all"
+              >
+                A
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Toggle Button -->
+        <div class="sm:hidden">
+          <button id="menu-toggle" class="p-2 focus:outline-none hover:bg-blue-500 rounded-md">
+            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="sm:hidden hidden" id="mobile-menu">
+      <div class="space-y-1 px-2 pt-2 pb-3">
+        <a href="#" class="block rounded-md bg-blue-700 px-3 py-2 text-base font-medium text-white">Home</a>
+        <a href="registration.html" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Registration</a>
+        <a href="login.html" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Login</a>
+        <!-- Mobile profile section (shown after login) -->
+        <div id="mobile-profile-section" class="hidden">
+          <!-- <a href="dashboard.html" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Dashboard</a> -->
+          <a href="#" id="mobile-logout" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-b from-background to-white py-24 flex-grow flex items-center">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div class="text-center">
+        <h1 class="text-5xl sm:text-6xl font-bold text-primary mb-6 leading-tight">Welcome to the <span class="text-secondary">Admission Portal</span></h1>
+        <p class="text-lg sm:text-xl text-textColor/80 max-w-3xl mx-auto mb-12 leading-relaxed">
+          Your gateway to a seamless admission process. Apply online and manage your profile with ease.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-6">
+          <a href="registration.html" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg font-medium transition shadow-md hover:shadow-lg transform hover:-translate-y-1">
+            Register Now
+          </a>
+          <a href="login.html" class="bg-white hover:bg-gray-100 text-primary border-2 border-primary px-8 py-4 rounded-lg font-medium transition shadow-md hover:shadow-lg transform hover:-translate-y-1">
+            Login
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script>
+    // Toggle mobile menu
+    const toggleButton = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    toggleButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Check if user is logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('token');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+      if (token) {
+        // Show profile section
+        document.getElementById('profile-section').classList.remove('hidden');
+        document.getElementById('mobile-profile-section').classList.remove('hidden');
+
+        // Set user's initial in the profile circle
+        if (userData.fullName) {
+          const initial = userData.fullName.charAt(0).toUpperCase();
+          document.getElementById('profile-initial').innerText = initial;
+        }
+
+        // Hide login/register links
+        const desktopLinks = document.querySelector('.hidden.sm\\:flex.items-center.space-x-6');
+        const mobileLinks = document.getElementById('mobile-menu').querySelector('.space-y-1.px-2.pt-2.pb-3');
+
+        // Add logout functionality
+        document.getElementById('logout-btn').addEventListener('click', logout);
+        document.getElementById('mobile-logout').addEventListener('click', logout);
+      }
+    });
+
+    function logout(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+      window.location.reload();
+    }
+  </script>
+
+</body>
+</html>

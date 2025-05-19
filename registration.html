@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration Form</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+ 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#F8FAFC',
+            primary: '#4338CA',    // Indigo
+            secondary: '#6366F1',  // Lighter Indigo
+            accent: '#EAB308',     // Yellow
+            textColor: '#1E293B',
+            error: '#DC2626'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+</head>
+<body class="bg-background text-textColor">
+  <!-- Navbar -->
+  <nav class="bg-primary text-white shadow-md mb-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Left Logo -->
+        <div class="text-xl font-bold">Admission Portal</div>
+
+        <!-- Desktop Links -->
+        <div class="hidden sm:flex items-center space-x-6">
+          <a href="index.html" class="hover:text-gray-300">Home</a>
+          <a href="login.html" class="hover:text-gray-300">Login</a>
+        </div>
+
+        <!-- Mobile Toggle Button -->
+        <div class="sm:hidden">
+          <button id="menu-toggle" class="p-2 focus:outline-none hover:bg-blue-500 rounded-md">
+            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="sm:hidden hidden" id="mobile-menu">
+      <div class="space-y-1 px-2 pt-2 pb-3">
+        <a href="index.html" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Home</a>
+        <a href="login.html" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-md mx-auto mt-8 bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-6 text-center text-primary">Student Registration</h2>
+    <form id="registration-form">
+      <div class="mb-4">
+        <label for="fname" class="block text-gray-700">First Name</label>
+        <input type="text" id="fname" class="w-full p-2 border border-gray-300 rounded" required />
+      </div>
+      <div class="mb-4">
+        <label for="mname" class="block text-gray-700">Middle Name</label>
+        <input type="text" id="mname" class="w-full p-2 border border-gray-300 rounded" required />
+      </div>
+      <div class="mb-4">
+        <label for="lname" class="block text-gray-700">Last Name</label>
+        <input type="text" id="lname" class="w-full p-2 border border-gray-300 rounded" required />
+      </div>
+      <div class="mb-4">
+        <label for="fullname" class="block text-gray-700">Full Name</label>
+        <input type="text" id="fullname" class="w-full p-2 border border-gray-300 rounded bg-gray-50" readonly />
+      </div>
+      <div class="mb-4">
+        <label for="mobile" class="block text-gray-700">Mobile Number</label>
+        <input type="text" id="mobile" class="w-full p-2 border border-gray-300 rounded" required maxlength="10" pattern="[0-9]{10}" />
+        <p class="text-xs text-gray-500 mt-1">Must be 10 digits</p>
+      </div>
+      <div class="mb-4">
+        <label for="email" class="block text-gray-700">Email (Username)</label>
+        <input type="email" id="email" class="w-full p-2 border border-gray-300 rounded" required />
+      </div>
+      <div class="mb-4">
+        <label for="password" class="block text-gray-700">Password</label>
+        <input type="password" id="password" class="w-full p-2 border border-gray-300 rounded" required minlength="6" />
+        <p class="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+      </div>
+      <div class="mb-4">
+        <label for="confirm-password" class="block text-gray-700">Confirm Password</label>
+        <input type="password" id="confirm-password" class="w-full p-2 border border-gray-300 rounded" required />
+      </div>
+      <div class="mb-4">
+        <label for="photo" class="block text-gray-700">Photo</label>
+        <input type="file" id="photo" class="w-full p-2 border border-gray-300 rounded" accept="image/jpeg, image/png" />
+        <p class="text-xs text-gray-500 mt-1">Optional - JPEG or PNG format (max 1MB)</p>
+        <!-- Photo preview will be added here dynamically -->
+      </div>
+      <button type="submit" class="w-full bg-primary text-white p-2 rounded hover:bg-primary/90 transition">Register</button>
+
+      <div class="text-center mt-4">
+        <p class="text-gray-600">Already have an account?
+          <a href="login.html" class="text-accent hover:underline">Login here</a>
+        </p>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Toggle mobile menu
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+
+    // Check if user is already logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    // Add file size validation
+    document.getElementById('photo').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const fileSize = file.size / 1024 / 1024; // size in MB
+        if (fileSize > 1) {
+          alert('File size exceeds 1MB. Please select a smaller file.');
+          e.target.value = ''; // Clear the file input
+          return;
+        }
+
+        // Validate file type
+        const fileType = file.type;
+        if (!fileType.match('image/jpeg') && !fileType.match('image/jpg') && !fileType.match('image/png')) {
+          alert('Only JPEG, JPG, and PNG files are allowed.');
+          e.target.value = ''; // Clear the file input
+          return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          // Create or update preview element
+          let previewElem = document.getElementById('photo-preview');
+          if (!previewElem) {
+            previewElem = document.createElement('div');
+            previewElem.id = 'photo-preview';
+            previewElem.className = 'mt-2 flex justify-center';
+            document.getElementById('photo').parentNode.appendChild(previewElem);
+          }
+          previewElem.innerHTML = `<img src="${e.target.result}" class="h-24 w-24 object-cover rounded-full border-2 border-blue-500">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Handle form submission for registration
+    document.getElementById('registration-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const fname = document.getElementById('fname').value;
+      const mname = document.getElementById('mname').value;
+      const lname = document.getElementById('lname').value;
+      const mobile = document.getElementById('mobile').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const photo = document.getElementById('photo').files[0];
+
+      // Validate form data
+      if (mobile.length !== 10) {
+        alert('Mobile number must be 10 digits');
+        return;
+      }
+
+      if (password !== document.getElementById('confirm-password').value) {
+        alert('Passwords must match');
+        return;
+      }
+
+      if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+      }
+
+      // Create registration data object
+      const registrationData = {
+        firstName: fname,
+        middleName: mname,
+        lastName: lname,
+        fullName: `${fname} ${mname} ${lname}`.trim(),
+        mobile: mobile,
+        email: email,
+        password: password
+      };
+
+      // Add photo if provided
+      if (photo) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          registrationData.photoData = e.target.result;
+          sendRegistrationRequest(registrationData);
+        };
+        reader.readAsDataURL(photo);
+      } else {
+        sendRegistrationRequest(registrationData);
+      }
+    });
+
+    function sendRegistrationRequest(registrationData) {
+      // Mock backend response for demonstration
+      console.log('Registration data:', registrationData);
+
+      // Store user data in localStorage for demo purposes
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+      // Check if email already exists
+      if (users.some(user => user.email === registrationData.email)) {
+        alert('Email is already in use!');
+        return;
+      }
+
+      // Add user to localStorage
+      users.push(registrationData);
+      localStorage.setItem('users', JSON.stringify(users));
+
+      // Show success message
+      alert('Registration successful! Please login with your credentials.');
+      window.location.href = 'login.html';
+    }
+
+    // Auto-populate the full name field
+    document.getElementById('fname').addEventListener('input', updateFullName);
+    document.getElementById('mname').addEventListener('input', updateFullName);
+    document.getElementById('lname').addEventListener('input', updateFullName);
+
+    function updateFullName() {
+      const fname = document.getElementById('fname').value;
+      const mname = document.getElementById('mname').value;
+      const lname = document.getElementById('lname').value;
+      const fullName = `${fname} ${mname} ${lname}`;
+      document.getElementById('fullname').value = fullName.trim();
+    }
+  </script>
+</body>
+</html>

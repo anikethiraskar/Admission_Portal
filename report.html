@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admission Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#F8FAFC',
+            primary: '#4338CA',    // Indigo
+            secondary: '#6366F1',  // Lighter Indigo
+            accent: '#EAB308',     // Yellow
+            textColor: '#1E293B',
+            error: '#DC2626'
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Add Excel export library -->
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+</head>
+<body class="bg-background text-textColor">
+  <!-- Navbar -->
+  <nav class="bg-gradient-to-r from-primary to-primary/80 text-white shadow-md mb-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Left Logo -->
+        <div class="text-xl font-bold">Admission Portal</div>
+
+        <!-- Desktop Links -->
+        <div class="hidden sm:flex items-center space-x-6">
+          <a href="#" class="hover:text-gray-300 font-medium">Report</a>
+          <a href="admission.html" class="hover:text-gray-300">Admission Form</a>
+          <a href="#" id="logout-btn" class="hover:text-gray-300">Logout</a>
+
+          <!-- Profile Initial -->
+          <div class="ml-4 relative group">
+            <div
+              id="profile-initial"
+              class="h-10 w-10 rounded-full border-2 border-white bg-blue-700 flex items-center justify-center text-white font-bold text-lg cursor-pointer"
+            >
+              A
+            </div>
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+              <a href="#" id="logout-dropdown" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Toggle Button -->
+        <div class="sm:hidden">
+          <button id="menu-toggle" class="p-2 focus:outline-none hover:bg-blue-500 rounded-md">
+            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="sm:hidden hidden" id="mobile-menu">
+      <div class="space-y-1 px-2 pt-2 pb-3">
+        <a href="#" class="block rounded-md bg-blue-700 px-3 py-2 text-base font-medium text-white">Report</a>
+        <a href="admission.html" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Admission Form</a>
+        <a href="#" id="mobile-logout" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-primary">Admission Report</h1>
+        <button id="export-excel" class="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-md flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+          Export to Excel
+        </button>
+      </div>
+
+      <!-- No Data Message -->
+      <div id="no-data-message" class="hidden text-center py-12">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-gray-600 text-lg">No admission forms found</p>
+        <a href="admission.html" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+          Submit Admission Form
+        </a>
+      </div>
+
+      <!-- Report Table -->
+      <div id="report-table-container" class="overflow-x-auto">
+        <table id="report-table" class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-primary/10">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">ID</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Full Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Email</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Mobile</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Date</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="report-table-body" class="bg-white divide-y divide-gray-200">
+            <!-- Table rows will be inserted here by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for viewing details -->
+  <div id="detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto">
+      <div class="flex justify-between items-center border-b px-6 py-4">
+        <h3 class="text-lg font-medium text-gray-900">Admission Details</h3>
+        <button id="close-modal" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="modal-content" class="px-6 py-4">
+        <!-- Modal content will be inserted here by JavaScript -->
+      </div>
+      <div class="bg-gray-50 px-6 py-4 flex justify-end">
+        <button id="close-modal-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md mr-2">
+          Close
+        </button>
+        <button id="edit-form-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md">
+          Edit Form
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-center mb-4 text-red-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 text-center mb-2">Confirm Deletion</h3>
+        <p class="text-gray-600 text-center">Are you sure you want to delete this admission form? This action cannot be undone.</p>
+      </div>
+      <div class="bg-gray-50 px-6 py-4 flex justify-center space-x-4">
+        <button id="cancel-delete" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+          Cancel
+        </button>
+        <button id="confirm-delete" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check if user is logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('token');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Set user's profile picture or initial
+      if (userData.fullName) {
+        const profileInitial = document.getElementById('profile-initial');
+        if (userData.photoData) {
+          // Replace the text with an image
+          profileInitial.innerHTML = `<img src="${userData.photoData}" class="h-full w-full object-cover rounded-full">`;
+        } else {
+          // Use initial as fallback
+          const initial = userData.fullName.charAt(0).toUpperCase();
+          profileInitial.innerText = initial;
+        }
+      }
+
+      // Toggle mobile menu
+      document.getElementById('menu-toggle').addEventListener('click', function() {
+        document.getElementById('mobile-menu').classList.toggle('hidden');
+      });
+
+      // Logout functionality
+      document.getElementById('logout-btn').addEventListener('click', logout);
+      document.getElementById('logout-dropdown').addEventListener('click', logout);
+      document.getElementById('mobile-logout').addEventListener('click', logout);
+
+      // Load report data
+      loadReportData();
+
+      // Export to Excel button
+      document.getElementById('export-excel').addEventListener('click', exportToExcel);
+
+      // Modal close buttons
+      document.getElementById('close-modal').addEventListener('click', closeDetailModal);
+      document.getElementById('close-modal-btn').addEventListener('click', closeDetailModal);
+
+      // Delete modal buttons
+      document.getElementById('cancel-delete').addEventListener('click', closeDeleteModal);
+      document.getElementById('confirm-delete').addEventListener('click', confirmDelete);
+
+      // Edit form button
+      document.getElementById('edit-form-btn').addEventListener('click', editForm);
+    });
+
+    function logout(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+      window.location.href = 'index.html';
+    }
+
+    // Load report data from localStorage
+    function loadReportData() {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.id) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Get user-specific forms
+      const userFormsKey = `admissionForms_${userData.id}`;
+      const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
+      
+      const tableBody = document.getElementById('report-table-body');
+      const noDataMessage = document.getElementById('no-data-message');
+      const tableContainer = document.getElementById('report-table-container');
+      
+      // Debug: Log the forms data to console
+      console.log('User ID:', userData.id);
+      console.log('Forms data:', forms);
+      
+      if (forms.length === 0) {
+        noDataMessage.classList.remove('hidden');
+        tableContainer.classList.add('hidden');
+        return;
+      }
+      
+      noDataMessage.classList.add('hidden');
+      tableContainer.classList.remove('hidden');
+      tableBody.innerHTML = '';
+      
+      // Sort forms by creation date (newest first)
+      forms.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
+      forms.forEach(form => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">${form.id}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${form.title || ''} ${form.fullname || ''}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${form.email || ''}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${form.mobile || ''}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${new Date(form.createdAt).toLocaleDateString()}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <button class="text-blue-600 hover:text-blue-900 mr-3 view-btn" data-id="${form.id}">View</button>
+            <button class="text-green-600 hover:text-green-900 mr-3 edit-btn" data-id="${form.id}">Edit</button>
+            <button class="text-red-600 hover:text-red-900 delete-btn" data-id="${form.id}">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // Add event listeners to buttons
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => viewDetails(btn.getAttribute('data-id')));
+      });
+
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => editAdmissionForm(btn.getAttribute('data-id')));
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => openDeleteModal(btn.getAttribute('data-id')));
+      });
+    }
+
+    // View details in modal
+    function viewDetails(formId) {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.id) return;
+      
+      const userFormsKey = `admissionForms_${userData.id}`;
+      const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
+      const form = forms.find(f => f.id == formId);
+
+      if (!form) return;
+
+      const modalContent = document.getElementById('modal-content');
+
+      // Create detail HTML
+      let detailHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Admission ID</p>
+            <p class="mt-1">${form.id}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Full Name</p>
+            <p class="mt-1">${form.title || ''} ${form.fullname || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Mother's Name</p>
+            <p class="mt-1">${form.motherName || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Gender</p>
+            <p class="mt-1">${form.gender || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Date of Birth</p>
+            <p class="mt-1">${form.dateOfBirth || ''} (Age: ${form.age || ''})</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Mobile</p>
+            <p class="mt-1">${form.mobile || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Email</p>
+            <p class="mt-1">${form.email || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Aadhaar Number</p>
+            <p class="mt-1">${form.aadhaarNumber || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Religion</p>
+            <p class="mt-1">${form.religion || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Caste Category</p>
+            <p class="mt-1">${form.casteCategory || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Caste</p>
+            <p class="mt-1">${form.caste || ''}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Physically Handicapped</p>
+            <p class="mt-1">${form.physicallyHandicapped ? 'Yes' : 'No'}</p>
+          </div>
+        </div>
+        <div class="mt-4">
+          <p class="text-sm font-medium text-gray-500">Address</p>
+          <p class="mt-1">${form.address || ''}, ${form.taluka || ''}, ${form.district || ''}, ${form.state || ''} - ${form.pinCode || ''}</p>
+        </div>
+        <div class="mt-4">
+          <p class="text-sm font-medium text-gray-500 mb-2">Uploaded Documents</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="border rounded-lg p-3 bg-gray-50">
+              <p class="font-medium text-primary">Caste Certificate</p>
+              ${form.casteCertificate ? 
+                `<div class="mt-2 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <span>${form.casteCertificateName || 'Document uploaded'}</span>
+                  <a href="${form.casteCertificate}" target="_blank" class="ml-auto text-primary hover:text-primary/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                    </svg>
+                  </a>
+                </div>` : 
+                `<div class="mt-2 text-gray-500">Not uploaded</div>`
+              }
+            </div>
+            <div class="border rounded-lg p-3 bg-gray-50">
+              <p class="font-medium text-primary">Marksheet</p>
+              ${form.marksheet ? 
+                `<div class="mt-2 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <span>${form.marksheetName || 'Document uploaded'}</span>
+                  <a href="${form.marksheet}" target="_blank" class="ml-auto text-primary hover:text-primary/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                    </svg>
+                  </a>
+                </div>` : 
+                `<div class="mt-2 text-gray-500">Not uploaded</div>`
+              }
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div class="border rounded-lg p-3 bg-gray-50">
+              <p class="font-medium text-primary">Photo</p>
+              ${form.photo ? 
+                `<div class="mt-2">
+                  <img src="${form.photo}" alt="Student Photo" class="h-32 w-32 object-cover rounded-md mx-auto border">
+                </div>` : 
+                `<div class="mt-2 text-gray-500">Not uploaded</div>`
+              }
+            </div>
+            <div class="border rounded-lg p-3 bg-gray-50">
+              <p class="font-medium text-primary">Signature</p>
+              ${form.signature ? 
+                `<div class="mt-2">
+                  <img src="${form.signature}" alt="Student Signature" class="h-16 w-32 object-contain rounded-md mx-auto border">
+                </div>` : 
+                `<div class="mt-2 text-gray-500">Not uploaded</div>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+
+      modalContent.innerHTML = detailHtml;
+
+      // Store current form ID for edit button
+      document.getElementById('edit-form-btn').setAttribute('data-id', formId);
+
+      // Show modal
+      document.getElementById('detail-modal').classList.remove('hidden');
+      document.getElementById('detail-modal').classList.add('flex');
+    }
+
+    // Close detail modal
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+      document.getElementById('detail-modal').classList.remove('flex');
+    }
+
+    // Edit admission form
+    function editForm() {
+      const formId = document.getElementById('edit-form-btn').getAttribute('data-id');
+      editAdmissionForm(formId);
+    }
+
+    function editAdmissionForm(formId) {
+      // Store the form ID to edit in localStorage
+      localStorage.setItem('editFormId', formId);
+      // Redirect to admission form page
+      window.location.href = 'admission.html?edit=true';
+    }
+
+    // Open delete confirmation modal
+    function openDeleteModal(formId) {
+      document.getElementById('confirm-delete').setAttribute('data-id', formId);
+      document.getElementById('delete-modal').classList.remove('hidden');
+      document.getElementById('delete-modal').classList.add('flex');
+    }
+
+    // Close delete modal
+    function closeDeleteModal() {
+      document.getElementById('delete-modal').classList.add('hidden');
+      document.getElementById('delete-modal').classList.remove('flex');
+    }
+
+    // Confirm delete
+    function confirmDelete() {
+      const formId = document.getElementById('confirm-delete').getAttribute('data-id');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.id) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const userFormsKey = `admissionForms_${userData.id}`;
+      const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
+      
+      const updatedForms = forms.filter(form => form.id != formId);
+      localStorage.setItem(userFormsKey, JSON.stringify(updatedForms));
+      
+      closeDeleteModal();
+      loadReportData();
+    }
+
+    // Export to Excel
+    function exportToExcel() {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.id) return;
+      
+      const userFormsKey = `admissionForms_${userData.id}`;
+      const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
+
+      if (forms.length === 0) {
+        alert('No data to export');
+        return;
+      }
+
+      // Prepare data for export
+      const data = forms.map(form => ({
+        'Admission ID': form.id,
+        'Full Name': `${form.title || ''} ${form.fullname || ''}`,
+        'Mother Name': form.motherName || '',
+        'Gender': form.gender || '',
+        'Address': form.address || '',
+        'Taluka': form.taluka || '',
+        'District': form.district || '',
+        'State': form.state || '',
+        'Pin Code': form.pinCode || '',
+        'Mobile': form.mobile || '',
+        'Email': form.email || '',
+        'Aadhaar Number': form.aadhaarNumber || '',
+        'Date of Birth': form.dateOfBirth || '',
+        'Age': form.age || '',
+        'Religion': form.religion || '',
+        'Caste Category': form.casteCategory || '',
+        'Caste': form.caste || '',
+        'Physically Handicapped': form.physicallyHandicapped ? 'Yes' : 'No',
+        'Submission Date': new Date(form.createdAt).toLocaleDateString()
+      }));
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(data);
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Admissions');
+
+      // Generate Excel file
+      XLSX.writeFile(workbook, 'admission_report.xlsx');
+    }
+
+    // Update status badge colors
+    function getStatusBadgeClass(status) {
+      switch (status) {
+        case 'PENDING':
+          return 'bg-accent/20 text-accent';
+        case 'APPROVED':
+          return 'bg-secondary/20 text-secondary';
+        case 'REJECTED':
+          return 'bg-error/20 text-error';
+        default:
+          return 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    // Update action buttons
+    function generateActionButtons(formId) {
+      return `
+        <button onclick="viewDetails(${formId})" class="text-primary hover:text-primary/80 mr-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
+        <button onclick="editForm(${formId})" class="text-accent hover:text-accent/80 mr-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+          </svg>
+        </button>
+        <button onclick="confirmDelete(${formId})" class="text-error hover:text-error/80">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      `;
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+

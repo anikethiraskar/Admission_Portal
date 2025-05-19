@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admission Form</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#F8FAFC',
+            primary: '#4338CA',    // Indigo
+            secondary: '#6366F1',  // Lighter Indigo
+            accent: '#EAB308',     // Yellow
+            textColor: '#1E293B',
+            error: '#DC2626'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+</head>
+<body class="bg-background text-textColor">
+  <!-- Navbar -->
+  <nav class="bg-gradient-to-r from-primary to-primary/80 text-white shadow-md mb-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Left Logo -->
+        <div class="text-xl font-bold">Admission Portal</div>
+
+        <!-- Desktop Links -->
+        <div class="hidden sm:flex items-center space-x-6">
+          <a href="report.html" class="hover:text-gray-300">Report</a>
+          <a href="#" class="hover:text-gray-300 font-medium">Admission Form</a>
+          <a href="#" id="logout-btn" class="hover:text-gray-300">Logout</a>
+
+          <!-- Profile Initial -->
+          <div class="ml-4 relative group">
+            <div
+              id="profile-initial"
+              class="h-10 w-10 rounded-full border-2 border-white bg-blue-700 flex items-center justify-center text-white font-bold text-lg cursor-pointer"
+            >
+              A
+            </div>
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+              <a href="#" id="logout-dropdown" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Toggle Button -->
+        <div class="sm:hidden">
+          <button id="menu-toggle" class="p-2 focus:outline-none hover:bg-blue-500 rounded-md">
+            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="sm:hidden hidden" id="mobile-menu">
+      <div class="space-y-1 px-2 pt-2 pb-3">
+        <a href="report.html" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Report</a>
+        <a href="#" class="block rounded-md bg-blue-700 px-3 py-2 text-base font-medium text-white">Admission Form</a>
+        <a href="#" id="mobile-logout" class="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-blue-500">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow mb-8">
+    <h2 class="text-2xl font-bold mb-6 text-center text-primary">Admission Form</h2>
+    <form id="admissionForm">
+
+      <!-- Title -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Title *</label>
+        <select id="title" class="w-full border px-3 py-2 rounded" required>
+          <option value="">Select</option>
+          <option>Mr.</option>
+          <option>Mrs.</option>
+          <option>Ms.</option>
+        </select>
+      </div>
+
+      <!-- Name Fields -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block font-medium mb-1">First Name *</label>
+          <input type="text" id="fname" class="w-full border px-3 py-2 rounded" required>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Middle Name *</label>
+          <input type="text" id="mname" class="w-full border px-3 py-2 rounded" required>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Last Name *</label>
+          <input type="text" id="lname" class="w-full border px-3 py-2 rounded" required>
+        </div>
+      </div>
+
+      <!-- Full Name -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Full Name *</label>
+        <input type="text" id="fullname" class="w-full border px-3 py-2 rounded bg-gray-100" readonly required>
+      </div>
+
+      <!-- Mother's Name -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Mother Name *</label>
+        <input type="text" id="motherName" class="w-full border px-3 py-2 rounded" required>
+      </div>
+
+      <!-- Gender -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Gender *</label>
+        <select id="gender" class="w-full border px-3 py-2 rounded" required>
+          <option value="">Select</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <!-- Address -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Address *</label>
+        <textarea id="address" class="w-full border px-3 py-2 rounded" rows="2" required></textarea>
+      </div>
+
+      <!-- Location Fields -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block font-medium mb-1">Taluka *</label>
+          <input type="text" id="taluka" class="w-full border px-3 py-2 rounded" required>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">District *</label>
+          <input type="text" id="district" class="w-full border px-3 py-2 rounded" required>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">State *</label>
+          <input type="text" id="state" class="w-full border px-3 py-2 rounded" required>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block font-medium mb-1">Pin Code *</label>
+          <input type="text" id="pinCode" class="w-full border px-3 py-2 rounded" required maxlength="6" pattern="[0-9]{6}">
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Mobile Number *</label>
+          <input type="tel" id="mobile" class="w-full border px-3 py-2 rounded" required pattern="[0-9]{10}">
+        </div>
+      </div>
+
+      <!-- Email & Aadhaar -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block font-medium mb-1">Email ID *</label>
+          <input type="email" id="email" class="w-full border px-3 py-2 rounded" required>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Aadhaar Number *</label>
+          <input type="text" id="aadhaar" class="w-full border px-3 py-2 rounded" maxlength="12" pattern="[0-9]{12}" required>
+        </div>
+      </div>
+
+      <!-- DOB & Age -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block font-medium mb-1">Date of Birth *</label>
+          <input type="date" id="dob" class="w-full border px-3 py-2 rounded" required>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Age *</label>
+          <input type="text" id="age" class="w-full border px-3 py-2 rounded bg-gray-100" readonly required>
+        </div>
+      </div>
+
+      <!-- Religion and Caste -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block font-medium mb-1">Religion *</label>
+          <input type="text" id="religion" class="w-full border px-3 py-2 rounded" list="religions" required>
+          <datalist id="religions">
+            <option>Hindu</option>
+            <option>Muslim</option>
+            <option>Sikh</option>
+            <option>Christian</option>
+            <option>Other</option>
+          </datalist>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Caste Category *</label>
+          <select id="casteCategory" class="w-full border px-3 py-2 rounded" required>
+            <option value="">Select</option>
+            <option>General</option>
+            <option>SC</option>
+            <option>ST</option>
+            <option>OBC</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Caste & Certificate -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block font-medium mb-1">Caste *</label>
+          <input type="text" id="caste" class="w-full border px-3 py-2 rounded" required>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Caste Certificate *</label>
+          <input type="file" id="casteCertificate" accept=".pdf,.png,.jpg,.jpeg" class="w-full border px-3 py-2 rounded-md text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" required>
+        </div>
+      </div>
+
+      <!-- Marksheet, Photo, Signature -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block font-medium text-gray-700 mb-1">Marksheet *</label>
+          <input type="file" id="marksheet" accept=".pdf,.png,.jpg,.jpeg" class="w-full border px-3 py-2 rounded-md text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" required>
+        </div>
+        <div>
+          <label class="block font-medium text-gray-700 mb-1">Photo *</label>
+          <input type="file" id="photo" accept="image/png, image/jpeg" class="w-full border px-3 py-2 rounded-md text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" required>
+        </div>
+        <div>
+          <label class="block font-medium text-gray-700 mb-1">Signature *</label>
+          <input type="file" id="signature" accept="image/png, image/jpeg" class="w-full border px-3 py-2 rounded-md text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" required>
+        </div>
+      </div>
+
+      <!-- Physically Handicapped -->
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Physically Handicapped *</label>
+        <div class="flex space-x-4 mt-2">
+          <label><input type="radio" name="ph" id="ph-yes" value="true" required> Yes</label>
+          <label><input type="radio" name="ph" id="ph-no" value="false" required> No</label>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="text-center">
+        <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded font-medium">
+          Submit Application
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let isEditMode = false;
+    let editFormId = null;
+
+    // Check if user is logged in
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('token');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Set user's profile picture or initial
+      if (userData.fullName) {
+        const profileInitial = document.getElementById('profile-initial');
+        if (userData.photoData) {
+          // Replace the text with an image
+          profileInitial.innerHTML = `<img src="${userData.photoData}" class="h-full w-full object-cover rounded-full">`;
+        } else {
+          // Use initial as fallback
+          const initial = userData.fullName.charAt(0).toUpperCase();
+          profileInitial.innerText = initial;
+        }
+      }
+
+      // Check if we're in edit mode
+      const urlParams = new URLSearchParams(window.location.search);
+      isEditMode = urlParams.get('edit') === 'true';
+      editFormId = localStorage.getItem('editFormId');
+
+      if (isEditMode && editFormId) {
+        // Load form data for editing
+        loadFormData(editFormId);
+        // Change submit button text
+        document.querySelector('button[type="submit"]').textContent = 'Update Application';
+      } else {
+        // Pre-fill user data if available
+        if (userData.email) {
+          document.getElementById('email').value = userData.email;
+        }
+      }
+
+      // Toggle mobile menu
+      document.getElementById('menu-toggle').addEventListener('click', function() {
+        document.getElementById('mobile-menu').classList.toggle('hidden');
+      });
+
+      // Logout functionality
+      document.getElementById('logout-btn').addEventListener('click', logout);
+      document.getElementById('logout-dropdown').addEventListener('click', logout);
+      document.getElementById('mobile-logout').addEventListener('click', logout);
+
+      // Add file size validation
+      document.getElementById('casteCertificate').addEventListener('change', validateFileSize);
+      document.getElementById('marksheet').addEventListener('change', validateFileSize);
+      document.getElementById('photo').addEventListener('change', validateFileSize);
+      document.getElementById('signature').addEventListener('change', validateFileSize);
+    });
+
+    // Load form data for editing
+    function loadFormData(formId) {
+      const forms = JSON.parse(localStorage.getItem('admissionForms') || '[]');
+      const form = forms.find(f => f.id == formId);
+
+      if (!form) {
+        alert('Form not found');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      // Populate form fields
+      document.getElementById('title').value = form.title || '';
+      document.getElementById('fname').value = form.fname || '';
+      document.getElementById('mname').value = form.mname || '';
+      document.getElementById('lname').value = form.lname || '';
+      document.getElementById('fullname').value = form.fullname || '';
+      document.getElementById('motherName').value = form.motherName || '';
+      document.getElementById('gender').value = form.gender || '';
+      document.getElementById('address').value = form.address || '';
+      document.getElementById('taluka').value = form.taluka || '';
+      document.getElementById('district').value = form.district || '';
+      document.getElementById('state').value = form.state || '';
+      document.getElementById('pinCode').value = form.pinCode || '';
+      document.getElementById('mobile').value = form.mobile || '';
+      document.getElementById('email').value = form.email || '';
+      document.getElementById('aadhaar').value = form.aadhaarNumber || '';
+      document.getElementById('dob').value = form.dateOfBirth || '';
+      document.getElementById('age').value = form.age || '';
+      document.getElementById('religion').value = form.religion || '';
+      document.getElementById('casteCategory').value = form.casteCategory || '';
+      document.getElementById('caste').value = form.caste || '';
+
+      // Set radio buttons
+      if (form.physicallyHandicapped) {
+        document.getElementById('ph-yes').checked = true;
+      } else {
+        document.getElementById('ph-no').checked = true;
+      }
+    }
+
+    // Validate file size (max 1MB)
+    function validateFileSize(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const fileSize = file.size / 1024 / 1024; // size in MB
+        if (fileSize > 1) {
+          alert('File size exceeds 1MB. Please select a smaller file.');
+          e.target.value = ''; // Clear the file input
+        }
+
+        // Validate file type
+        const fileType = file.type;
+        if (!fileType.match('image/jpeg') && !fileType.match('image/jpg') && !fileType.match('image/png')) {
+          alert('Only JPEG, JPG, and PNG files are allowed.');
+          e.target.value = ''; // Clear the file input
+        }
+      }
+    }
+
+    function logout(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      localStorage.removeItem('userData');
+      window.location.href = 'index.html';
+    }
+
+    // Auto-populate the full name field
+    document.getElementById('fname').addEventListener('input', updateFullName);
+    document.getElementById('mname').addEventListener('input', updateFullName);
+    document.getElementById('lname').addEventListener('input', updateFullName);
+
+    function updateFullName() {
+      const f = document.getElementById('fname').value.trim();
+      const m = document.getElementById('mname').value.trim();
+      const l = document.getElementById('lname').value.trim();
+      document.getElementById('fullname').value = `${f} ${m} ${l}`.trim();
+    }
+
+    // Calculate age from date of birth
+    document.getElementById('dob').addEventListener('change', function () {
+      const dob = new Date(this.value);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      document.getElementById('age').value = age;
+    });
+
+    // Handle form submission
+    document.getElementById('admissionForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const token = localStorage.getItem('token');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      
+      if (!token || !userData.id) {
+        alert('You must be logged in to submit an application');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Get form data
+      const formData = {
+        title: document.getElementById('title').value,
+        fname: document.getElementById('fname').value,
+        mname: document.getElementById('mname').value,
+        lname: document.getElementById('lname').value,
+        fullname: document.getElementById('fullname').value,
+        motherName: document.getElementById('motherName').value,
+        gender: document.getElementById('gender').value,
+        address: document.getElementById('address').value,
+        taluka: document.getElementById('taluka').value,
+        district: document.getElementById('district').value,
+        state: document.getElementById('state').value,
+        pinCode: document.getElementById('pinCode').value,
+        mobile: document.getElementById('mobile').value,
+        email: document.getElementById('email').value,
+        aadhaarNumber: document.getElementById('aadhaar').value,
+        dateOfBirth: document.getElementById('dob').value,
+        age: parseInt(document.getElementById('age').value),
+        religion: document.getElementById('religion').value,
+        casteCategory: document.getElementById('casteCategory').value,
+        caste: document.getElementById('caste').value,
+        physicallyHandicapped: document.getElementById('ph-yes').checked
+      };
+
+      // Validate required fields
+      const requiredFields = [
+        'title', 'fname', 'mname', 'lname', 'fullname', 'motherName', 'gender',
+        'address', 'taluka', 'district', 'state', 'pinCode', 'mobile', 'email',
+        'aadhaarNumber', 'dateOfBirth', 'age', 'religion', 'casteCategory', 'caste'
+      ];
+
+      for (const field of requiredFields) {
+        if (!formData[field]) {
+          alert(`Please fill in all required fields. Missing: ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+          return;
+        }
+      }
+
+      // Validate file uploads
+      if (!isEditMode) {
+        const requiredFiles = ['casteCertificate', 'marksheet', 'photo', 'signature'];
+        for (const fileField of requiredFiles) {
+          if (document.getElementById(fileField).files.length === 0) {
+            alert(`Please upload all required files. Missing: ${fileField.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+            return;
+          }
+        }
+      }
+
+      // Process file uploads
+      const filePromises = ['casteCertificate', 'marksheet', 'photo', 'signature'].map(field => {
+        const file = document.getElementById(field).files[0];
+        if (file) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({ field, data: reader.result, name: file.name });
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+        return null;
+      }).filter(p => p !== null);
+
+      Promise.all(filePromises).then(results => {
+        // Add file data to formData
+        results.forEach(result => {
+          formData[result.field] = result.data;
+          formData[result.field + 'Name'] = result.name;
+        });
+        
+        // Get user-specific forms from localStorage
+        const userFormsKey = `admissionForms_${userData.id}`;
+        const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
+        
+        if (isEditMode && editFormId) {
+          // Update existing form
+          const formIndex = forms.findIndex(f => f.id == editFormId);
+          if (formIndex !== -1) {
+            // Preserve existing values that shouldn't change
+            formData.id = parseInt(editFormId);
+            formData.status = forms[formIndex].status;
+            formData.createdAt = forms[formIndex].createdAt;
+            formData.studentId = userData.id;
+
+            // If files weren't changed, keep the old values
+            if (!formData.casteCertificate && forms[formIndex].casteCertificate) {
+              formData.casteCertificate = forms[formIndex].casteCertificate;
+            }
+            if (!formData.marksheet && forms[formIndex].marksheet) {
+              formData.marksheet = forms[formIndex].marksheet;
+            }
+            if (!formData.photo && forms[formIndex].photo) {
+              formData.photo = forms[formIndex].photo;
+            }
+            if (!formData.signature && forms[formIndex].signature) {
+              formData.signature = forms[formIndex].signature;
+            }
+
+            // Update the form
+            forms[formIndex] = formData;
+            localStorage.setItem(userFormsKey, JSON.stringify(forms));
+
+            // Clear edit mode
+            localStorage.removeItem('editFormId');
+
+            // Show success message
+            alert('Admission form updated successfully!');
+            window.location.href = 'report.html';
+          } else {
+            alert('Form not found');
+          }
+        } else {
+          // Add new form
+          formData.id = forms.length + 1;
+          formData.status = 'PENDING';
+          formData.createdAt = new Date().toISOString();
+          formData.studentId = userData.id;
+
+          forms.push(formData);
+          localStorage.setItem(userFormsKey, JSON.stringify(forms));
+
+          // Show success message
+          alert('Admission form submitted successfully!');
+          window.location.href = 'report.html';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

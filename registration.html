@@ -138,7 +138,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       const token = localStorage.getItem('token');
       if (token) {
-        window.location.href = 'dashboard.html';
+        window.location.href = 'report.html';
       }
     });
 
@@ -178,7 +178,7 @@
       }
     });
 
-    // Add this validation for Indian mobile numbers
+    // This validation for Indian mobile numbers
     document.getElementById('mobile').addEventListener('input', function(e) {
       const mobileNumber = e.target.value;
       const mobileInput = document.getElementById('mobile');

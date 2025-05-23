@@ -76,7 +76,13 @@
   </nav>
 
   <div class="max-w-4xl mx-auto bg-white p-8 rounded shadow mb-8">
-    <h2 class="text-2xl font-bold mb-6 text-center text-primary">Admission Form</h2>
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-center text-primary">Admission Form</h2>
+      <div id="admission-id-container" class="hidden">
+        <span class="text-sm text-gray-500">Admission ID:</span>
+        <span id="admission-id" class="ml-1 font-medium text-primary"></span>
+      </div>
+    </div>
     <form id="admissionForm">
 
       <!-- Title -->
@@ -138,16 +144,26 @@
       <!-- Location Fields -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         <div>
-          <label class="block font-medium mb-1">Taluka *</label>
-          <input type="text" id="taluka" class="w-full border px-3 py-2 rounded" required>
+          <label class="block font-medium mb-1">State *</label>
+          <select id="state" class="w-full border px-3 py-2 rounded" required>
+            <option value="">Select State</option>
+            <option value="Maharashtra">Maharashtra</option>
+            <option value="Gujarat">Gujarat</option>
+            <option value="Karnataka">Karnataka</option>
+            <option value="Tamil Nadu">Tamil Nadu</option>
+          </select>
         </div>
         <div>
           <label class="block font-medium mb-1">District *</label>
-          <input type="text" id="district" class="w-full border px-3 py-2 rounded" required>
+          <select id="district" class="w-full border px-3 py-2 rounded" required disabled>
+            <option value="">Select District</option>
+          </select>
         </div>
         <div>
-          <label class="block font-medium mb-1">State *</label>
-          <input type="text" id="state" class="w-full border px-3 py-2 rounded" required>
+          <label class="block font-medium mb-1">Taluka *</label>
+          <select id="taluka" class="w-full border px-3 py-2 rounded" required disabled>
+            <option value="">Select Taluka</option>
+          </select>
         </div>
       </div>
 
@@ -295,6 +311,24 @@
         // Change submit button text
         document.querySelector('button[type="submit"]').textContent = 'Update Application';
       } else {
+        // For new forms, generate a unique ID
+        const userFormsKey = `admissionForms_${userData.id}`;
+        const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
+        const newIdNumber = forms.length > 0 ? Math.max(...forms.map(f => {
+          // Extract the numeric part if it's in the ADD-INT-X format
+          if (typeof f.id === 'string' && f.id.startsWith('ADD-INT-')) {
+            return parseInt(f.id.replace('ADD-INT-', '')) || 0;
+          }
+          return typeof f.id === 'number' ? f.id : 0;
+        })) + 1 : 1;
+        
+        // Format the ID as ADD-INT-X
+        const newId = `ADD-INT-${newIdNumber}`;
+        
+        // Display the new ID
+        document.getElementById('admission-id').textContent = newId;
+        document.getElementById('admission-id-container').classList.remove('hidden');
+        
         // Pre-fill user data if available
         if (userData.email) {
           document.getElementById('email').value = userData.email;
@@ -320,7 +354,11 @@
 
     // Load form data for editing
     function loadFormData(formId) {
-      const forms = JSON.parse(localStorage.getItem('admissionForms') || '[]');
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.id) return;
+      
+      const userFormsKey = `admissionForms_${userData.id}`;
+      const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
       const form = forms.find(f => f.id == formId);
 
       if (!form) {
@@ -328,6 +366,10 @@
         window.location.href = 'dashboard.html';
         return;
       }
+
+      // Display admission ID
+      document.getElementById('admission-id').textContent = form.id;
+      document.getElementById('admission-id-container').classList.remove('hidden');
 
       // Populate form fields
       document.getElementById('title').value = form.title || '';
@@ -357,6 +399,40 @@
       } else {
         document.getElementById('ph-no').checked = true;
       }
+
+      // Make file inputs not required when editing
+      document.getElementById('casteCertificate').removeAttribute('required');
+      document.getElementById('marksheet').removeAttribute('required');
+      document.getElementById('photo').removeAttribute('required');
+      document.getElementById('signature').removeAttribute('required');
+
+      // Add file preview indicators if files exist
+      if (form.casteCertificate) {
+        addFilePreview('casteCertificate', form.casteCertificateName || 'Caste Certificate');
+      }
+      if (form.marksheet) {
+        addFilePreview('marksheet', form.marksheetName || 'Marksheet');
+      }
+      if (form.photo) {
+        addFilePreview('photo', form.photoName || 'Photo');
+      }
+      if (form.signature) {
+        addFilePreview('signature', form.signatureName || 'Signature');
+      }
+    }
+
+    // Add file preview indicator
+    function addFilePreview(fieldId, fileName) {
+      const fileInput = document.getElementById(fieldId);
+      const previewContainer = document.createElement('div');
+      previewContainer.className = 'mt-2 flex items-center text-sm text-gray-600';
+      previewContainer.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>Previously uploaded: ${fileName}</span>
+      `;
+      fileInput.parentNode.appendChild(previewContainer);
     }
 
     // Validate file size (max 1MB)
@@ -407,6 +483,18 @@
         age--;
       }
       document.getElementById('age').value = age;
+    });
+
+    // Auto-select gender based on title
+    document.getElementById('title').addEventListener('change', function() {
+      const title = this.value;
+      const genderSelect = document.getElementById('gender');
+      
+      if (title === 'Mr.') {
+        genderSelect.value = 'Male';
+      } else if (title === 'Mrs.' || title === 'Ms.') {
+        genderSelect.value = 'Female';
+      }
     });
 
     // Handle form submission
@@ -461,7 +549,7 @@
         }
       }
 
-      // Validate file uploads
+      // Validate file uploads only for new submissions
       if (!isEditMode) {
         const requiredFiles = ['casteCertificate', 'marksheet', 'photo', 'signature'];
         for (const fileField of requiredFiles) {
@@ -472,19 +560,21 @@
         }
       }
 
-      // Process file uploads
-      const filePromises = ['casteCertificate', 'marksheet', 'photo', 'signature'].map(field => {
-        const file = document.getElementById(field).files[0];
-        if (file) {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve({ field, data: reader.result, name: file.name });
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        }
-        return null;
-      }).filter(p => p !== null);
+      // Process file uploads - only for files that were actually selected
+      const filePromises = ['casteCertificate', 'marksheet', 'photo', 'signature']
+        .map(field => {
+          const file = document.getElementById(field).files[0];
+          if (file) {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve({ field, data: reader.result, name: file.name });
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          }
+          return null;
+        })
+        .filter(p => p !== null);
 
       Promise.all(filePromises).then(results => {
         // Add file data to formData
@@ -502,7 +592,7 @@
           const formIndex = forms.findIndex(f => f.id == editFormId);
           if (formIndex !== -1) {
             // Preserve existing values that shouldn't change
-            formData.id = parseInt(editFormId);
+            formData.id = forms[formIndex].id; // Keep the original ID format
             formData.status = forms[formIndex].status;
             formData.createdAt = forms[formIndex].createdAt;
             formData.studentId = userData.id;
@@ -510,15 +600,19 @@
             // If files weren't changed, keep the old values
             if (!formData.casteCertificate && forms[formIndex].casteCertificate) {
               formData.casteCertificate = forms[formIndex].casteCertificate;
+              formData.casteCertificateName = forms[formIndex].casteCertificateName;
             }
             if (!formData.marksheet && forms[formIndex].marksheet) {
               formData.marksheet = forms[formIndex].marksheet;
+              formData.marksheetName = forms[formIndex].marksheetName;
             }
             if (!formData.photo && forms[formIndex].photo) {
               formData.photo = forms[formIndex].photo;
+              formData.photoName = forms[formIndex].photoName;
             }
             if (!formData.signature && forms[formIndex].signature) {
               formData.signature = forms[formIndex].signature;
+              formData.signatureName = forms[formIndex].signatureName;
             }
 
             // Update the form
@@ -535,8 +629,20 @@
             alert('Form not found');
           }
         } else {
+          // Generate a unique admission ID for new forms
+          const newIdNumber = forms.length > 0 ? Math.max(...forms.map(f => {
+            // Extract the numeric part if it's in the ADD-INT-X format
+            if (typeof f.id === 'string' && f.id.startsWith('ADD-INT-')) {
+              return parseInt(f.id.replace('ADD-INT-', '')) || 0;
+            }
+            return typeof f.id === 'number' ? f.id : 0;
+          })) + 1 : 1;
+          
+          // Format the ID as ADD-INT-X
+          const newId = `ADD-INT-${newIdNumber}`;
+          
           // Add new form
-          formData.id = forms.length + 1;
+          formData.id = newId;
           formData.status = 'PENDING';
           formData.createdAt = new Date().toISOString();
           formData.studentId = userData.id;
@@ -550,6 +656,228 @@
         }
       });
     });
+
+    // Location data for cascading dropdowns
+    const locationData = {
+      "Maharashtra": {
+        districts: {
+          "Mumbai City": ["Mumbai City"],
+          "Mumbai Suburban": ["Andheri", "Borivali", "Kurla", "Bandra", "Chembur"],
+          "Thane": ["Thane", "Kalyan", "Ambernath", "Bhiwandi", "Ulhasnagar", "Murbad", "Shahapur"],
+          "Pune": ["Pune City", "Haveli", "Mulshi", "Maval", "Bhor", "Velhe", "Junnar", "Ambegaon"],
+          "Nagpur": ["Nagpur Urban", "Nagpur Rural", "Kamptee", "Hingna", "Ramtek", "Umred", "Katol"],
+          "Nashik": ["Nashik", "Igatpuri", "Sinnar", "Dindori", "Trimbakeshwar", "Peth", "Surgana"],
+          "Aurangabad": ["Aurangabad", "Kannad", "Soegaon", "Sillod", "Phulambri", "Khuldabad", "Vaijapur"],
+          "Ahmednagar": ["Ahmednagar", "Shrirampur", "Rahuri", "Parner", "Shevgaon", "Pathardi", "Jamkhed"],
+          "Kolhapur": ["Kolhapur", "Karvir", "Panhala", "Shahuwadi", "Gadhinglaj", "Radhanagari"],
+          "Solapur": ["Solapur North", "Solapur South", "Akkalkot", "Barshi", "Madha", "Karmala", "Pandharpur"],
+          "Satara": ["Satara", "Karad", "Wai", "Mahabaleshwar", "Phaltan", "Man", "Khatav"],
+          "Sangli": ["Sangli", "Miraj", "Tasgaon", "Khanapur", "Atpadi", "Kadegaon", "Walwa"],
+          "Ratnagiri": ["Ratnagiri", "Lanja", "Rajapur", "Chiplun", "Dapoli", "Guhagar", "Khed"],
+          "Sindhudurg": ["Kudal", "Sawantwadi", "Vengurla", "Kankavli", "Malvan", "Devgad", "Vaibhavwadi"],
+          "Raigad": ["Alibag", "Pen", "Panvel", "Karjat", "Khalapur", "Mahad", "Mangaon", "Mhasala"],
+          "Amravati": ["Amravati", "Achalpur", "Chandur Railway", "Daryapur", "Morshi", "Warud", "Anjangaon"],
+          "Akola": ["Akola", "Akot", "Telhara", "Balapur", "Patur", "Murtijapur", "Barshitakli"],
+          "Yavatmal": ["Yavatmal", "Pusad", "Umarkhed", "Digras", "Arni", "Ghatanji", "Wani"],
+          "Wardha": ["Wardha", "Arvi", "Ashti", "Deoli", "Hinganghat", "Samudrapur", "Seloo"],
+          "Washim": ["Washim", "Malegaon", "Risod", "Mangrulpir", "Karanja", "Manora"],
+          "Buldhana": ["Buldhana", "Chikhli", "Deulgaon Raja", "Jalgaon Jamod", "Malkapur", "Mehkar", "Sindkhed Raja"],
+          "Jalgaon": ["Jalgaon", "Bhusawal", "Chopda", "Pachora", "Jamner", "Erandol", "Dharangaon"],
+          "Nandurbar": ["Nandurbar", "Shahada", "Taloda", "Akkalkuwa", "Akrani", "Nawapur"],
+          "Dhule": ["Dhule", "Sakri", "Sindkheda", "Shirpur"],
+          "Jalna": ["Jalna", "Ambad", "Bhokardan", "Badnapur", "Ghansawangi", "Partur", "Mantha"],
+          "Parbhani": ["Parbhani", "Gangakhed", "Jintur", "Manwath", "Pathri", "Purna", "Sonpeth"],
+          "Hingoli": ["Hingoli", "Kalamnuri", "Sengaon", "Aundha Nagnath", "Basmath"],
+          "Nanded": ["Nanded", "Ardhapur", "Bhokar", "Biloli", "Deglur", "Dharmabad", "Hadgaon", "Kandhar"],
+          "Osmanabad": ["Osmanabad", "Tuljapur", "Umarga", "Kalamb", "Lohara", "Paranda", "Bhum", "Washi"],
+          "Latur": ["Latur", "Ahmadpur", "Ausa", "Chakur", "Jalkot", "Nilanga", "Renapur", "Shirur-Anantpal"],
+          "Beed": ["Beed", "Ashti", "Patoda", "Shirur-Kasar", "Georai", "Manjlegaon", "Parli", "Wadwani"],
+          "Palghar": ["Palghar", "Vasai", "Dahanu", "Talasari", "Jawhar", "Mokhada", "Vikramgad", "Wada"],
+          "Gadchiroli": ["Gadchiroli", "Aheri", "Armori", "Chamorshi", "Desaiganj", "Etapalli", "Kurkheda"],
+          "Chandrapur": ["Chandrapur", "Ballarpur", "Bhadravati", "Brahmapuri", "Chimur", "Gondpipri", "Rajura"],
+          "Bhandara": ["Bhandara", "Mohadi", "Pauni", "Tumsar", "Lakhandur", "Sakoli", "Lakhani"],
+          "Gondia": ["Gondia", "Tirora", "Goregaon", "Amgaon", "Salekasa", "Sadak Arjuni", "Deori"]
+        }
+      },
+      "Gujarat": {
+        districts: {
+          "Ahmedabad": ["Ahmedabad City", "Daskroi", "Sanand", "Dholka", "Bavla", "Detroj-Rampura"],
+          "Surat": ["Surat City", "Olpad", "Choryasi", "Palsana", "Bardoli", "Kamrej", "Mandvi"],
+          "Vadodara": ["Vadodara City", "Padra", "Savli", "Dabhoi", "Waghodia", "Karjan", "Sinor"],
+          "Rajkot": ["Rajkot City", "Lodhika", "Jasdan", "Gondal", "Jetpur", "Dhoraji", "Upleta"]
+        }
+      },
+      "Karnataka": {
+        districts: {
+          "Bangalore": ["Bangalore North", "Bangalore South", "Anekal", "Bangalore East", "Bangalore West"],
+          "Mysore": ["Mysore", "Nanjangud", "T Narasipura", "H D Kote", "Hunsur", "K R Nagar", "Periyapatna"],
+          "Mangalore": ["Mangalore", "Bantwal", "Puttur", "Sullia", "Belthangady"]
+        }
+      },
+      "Tamil Nadu": {
+        districts: {
+          "Chennai": ["Chennai North", "Chennai South", "Chennai Central", "Chennai West", "Chennai East"],
+          "Coimbatore": ["Coimbatore North", "Coimbatore South", "Mettupalayam", "Pollachi", "Valparai"],
+          "Madurai": ["Madurai East", "Madurai West", "Melur", "Vadipatti", "Usilampatti", "Peraiyur"]
+        }
+      }
+    };
+
+    // Handle cascading dropdowns for state, district, and taluka
+    document.getElementById('state').addEventListener('change', function() {
+      const stateValue = this.value;
+      const districtDropdown = document.getElementById('district');
+      const talukaDropdown = document.getElementById('taluka');
+      
+      // Reset district and taluka dropdowns
+      districtDropdown.innerHTML = '<option value="">Select District</option>';
+      talukaDropdown.innerHTML = '<option value="">Select Taluka</option>';
+      
+      // Disable dropdowns if no state is selected
+      if (!stateValue) {
+        districtDropdown.disabled = true;
+        talukaDropdown.disabled = true;
+        return;
+      }
+      
+      // Enable and populate district dropdown
+      districtDropdown.disabled = false;
+      
+      // Get districts for selected state
+      const districts = Object.keys(locationData[stateValue].districts);
+      
+      // Add district options
+      districts.forEach(district => {
+        const option = document.createElement('option');
+        option.value = district;
+        option.textContent = district;
+        districtDropdown.appendChild(option);
+      });
+      
+      // Keep taluka disabled until district is selected
+      talukaDropdown.disabled = true;
+    });
+
+    document.getElementById('district').addEventListener('change', function() {
+      const stateValue = document.getElementById('state').value;
+      const districtValue = this.value;
+      const talukaDropdown = document.getElementById('taluka');
+      
+      // Reset taluka dropdown
+      talukaDropdown.innerHTML = '<option value="">Select Taluka</option>';
+      
+      // Disable taluka if no district is selected
+      if (!districtValue) {
+        talukaDropdown.disabled = true;
+        return;
+      }
+      
+      // Enable and populate taluka dropdown
+      talukaDropdown.disabled = false;
+      
+      // Get talukas for selected district
+      const talukas = locationData[stateValue].districts[districtValue];
+      
+      // Add taluka options
+      talukas.forEach(taluka => {
+        const option = document.createElement('option');
+        option.value = taluka;
+        option.textContent = taluka;
+        talukaDropdown.appendChild(option);
+      });
+    });
+
+    // Update loadFormData function to handle dropdowns
+    function loadFormData(formId) {
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      if (!userData.id) return;
+      
+      const userFormsKey = `admissionForms_${userData.id}`;
+      const forms = JSON.parse(localStorage.getItem(userFormsKey) || '[]');
+      const form = forms.find(f => f.id == formId);
+
+      if (!form) {
+        alert('Form not found');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      // Display admission ID
+      document.getElementById('admission-id').textContent = form.id;
+      document.getElementById('admission-id-container').classList.remove('hidden');
+
+      // Populate form fields
+      document.getElementById('title').value = form.title || '';
+      document.getElementById('fname').value = form.fname || '';
+      document.getElementById('mname').value = form.mname || '';
+      document.getElementById('lname').value = form.lname || '';
+      document.getElementById('fullname').value = form.fullname || '';
+      document.getElementById('motherName').value = form.motherName || '';
+      document.getElementById('gender').value = form.gender || '';
+      document.getElementById('address').value = form.address || '';
+      document.getElementById('taluka').value = form.taluka || '';
+      document.getElementById('district').value = form.district || '';
+      document.getElementById('state').value = form.state || '';
+      document.getElementById('pinCode').value = form.pinCode || '';
+      document.getElementById('mobile').value = form.mobile || '';
+      document.getElementById('email').value = form.email || '';
+      document.getElementById('aadhaar').value = form.aadhaarNumber || '';
+      document.getElementById('dob').value = form.dateOfBirth || '';
+      document.getElementById('age').value = form.age || '';
+      document.getElementById('religion').value = form.religion || '';
+      document.getElementById('casteCategory').value = form.casteCategory || '';
+      document.getElementById('caste').value = form.caste || '';
+
+      // Set radio buttons
+      if (form.physicallyHandicapped) {
+        document.getElementById('ph-yes').checked = true;
+      } else {
+        document.getElementById('ph-no').checked = true;
+      }
+
+      // Make file inputs not required when editing
+      document.getElementById('casteCertificate').removeAttribute('required');
+      document.getElementById('marksheet').removeAttribute('required');
+      document.getElementById('photo').removeAttribute('required');
+      document.getElementById('signature').removeAttribute('required');
+
+      // Add file preview indicators if files exist
+      if (form.casteCertificate) {
+        addFilePreview('casteCertificate', form.casteCertificateName || 'Caste Certificate');
+      }
+      if (form.marksheet) {
+        addFilePreview('marksheet', form.marksheetName || 'Marksheet');
+      }
+      if (form.photo) {
+        addFilePreview('photo', form.photoName || 'Photo');
+      }
+      if (form.signature) {
+        addFilePreview('signature', form.signatureName || 'Signature');
+      }
+
+      // Set state, district, and taluka values
+      if (form.state) {
+        document.getElementById('state').value = form.state;
+        
+        // Trigger state change event to load districts
+        const stateEvent = new Event('change');
+        document.getElementById('state').dispatchEvent(stateEvent);
+        
+        // Set district if available
+        if (form.district) {
+          document.getElementById('district').value = form.district;
+          
+          // Trigger district change event to load talukas
+          const districtEvent = new Event('change');
+          document.getElementById('district').dispatchEvent(districtEvent);
+          
+          // Set taluka if available
+          if (form.taluka) {
+            document.getElementById('taluka').value = form.taluka;
+          }
+        }
+      }
+    }
   </script>
 </body>
 </html>
